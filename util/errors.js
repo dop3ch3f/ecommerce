@@ -10,38 +10,42 @@ exports.errors = {
     text: 'Unknown error !!!',
     hints: ["Please contact development team with information on 'how to reproduce this error'. Thank you for your help and support."],
   },
+  // All required/missing entry errors start with number 7
 
   ENTRY_ALREADY_EXISTS: {
-    code: 6000,
-    text: "Vacation package with the provided 'name' already exist",
-    hints: ['Please use PUT for update instead of POST'],
-    info: 'http://developer.acme.com/errors#6000',
+    code: 7000,
+    text: 'Entry with the provided payload already exist',
+    hints: ['Please use PUT/PATCH for update instead of POST'],
   },
 
-  // All required/missing field errors start with number 7
-  MISSING_ENTRY: {
+  ENTRY_DOES_NOT_EXIST: {
     code: 7001,
-    text: "Required field vacation 'name' is missing",
-    hints: ["Please check that user has provided the non null value for 'name'"],
-    info: 'http://developer.acme.com/error#RequiredFields',
+    text: 'Entry with the provided payload already exist',
+    hints: ['Please use PUT/PATCH for update instead of POST'],
   },
+
+
+  MISSING_ENTRY: {
+    code: 7002,
+    text: 'Incomplete Request Parameter',
+    hints: ['Please check that user has provided the right payload for the endpoint'],
+  },
+
+  // All server errors start with number 8
 
   SERVER_ERROR: {
-    code: 8001,
-    text: "Required field vacation 'name' is missing",
-    hints: ["Please check that user has provided the non null value for 'name'"],
-    info: 'http://developer.acme.com/error#RequiredFields',
+    code: 8000,
+    text: 'This issue is from us, we apologize',
+    hints: ["Please contact development team with information on 'how to reproduce this error'. Thank you for your help and support."],
   },
-  // All format errors begin with number 8
 };
 
-/**
- * Utility methods
- * Creates the error response body to be sent back to the caller
- */
+// Creates the error response body
+
 exports.create = (message, httpMethod, endpointInformation, errorList, receivedPayload) => ({
   // Meant for the developer
   text: message,
+  // Current timestamp of the error
   timestamp: new Date(),
   // POST, GET ....
   method: httpMethod,

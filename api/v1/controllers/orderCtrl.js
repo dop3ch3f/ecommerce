@@ -3,17 +3,36 @@
 const { knex } = require('../../../db/database');
 const apiErrors = require('../../../util/errors');
 const apiMessages = require('../../../util/messages');
-const knexGenericErrors = require('knex-generic-errors');
 
-const db = knexGenericErrors.attach(knex, () => knex);
 
+// To generate an error response per errors in this document
 const processErrors = (message, method, endpoint, err, payload) => {
   const errorList = [];
+  // Check for validation error
+  console.log(err);
+  switch (err.name) {
+    // entry already exists
+    case 'AlreadyExist':
+      errorList.push(apiErrors.errors.ENTRY_ALREADY_EXISTS);
+      break;
+    // issues with the query
+    case 'QueryError':
+      errorList.push(apiErrors.errors.MISSING_ENTRY);
+      break;
+    // issues with the database
+    case 'DatabaseError':
+      errorList.push(apiErrors.errors.SERVER_ERROR);
+      break;
+    default:
+      errorList.push(apiErrors.errors.UNKNOWN_ERROR);
+      break;
+  }
+  return apiErrors.create(message, method, endpoint, errorList, payload);
 };
 
 const registerOrder = (req, res) => {
   const data = req.body;
-  db('orders').insert(data).returning('*')
+  return knex('orders').insert(data).returning('*')
     .then(response => res.json(response))
     .catch((err) => {
       const report = processErrors(apiMessages.errors.CREATE_FAILED, 'POST', req.url, err, data);
@@ -21,6 +40,8 @@ const registerOrder = (req, res) => {
     });
 };
 const retreiveOrders = (req, res) => {
+  let data = req.body;
+  return knex.select('*').from('orders').where('data')
 
 };
 const updateOrders = (req, res) => {
