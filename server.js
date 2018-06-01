@@ -4,6 +4,7 @@ const mws = require('./config/middlewares');
 const routes = require('./api/v1/index');
 const numWorkers = require('os').cpus().length;
 const auth = require('./config/auth');
+const { knex } = require('./db/database');
 
 const app = express();
 require('dotenv').config();
@@ -14,6 +15,13 @@ app.use(mws);
 app.use(auth);
 app.use(routes.home);
 
+knex.migrate.latest()
+  .then((success) => {
+    console.log('DB ready', success);
+  })
+  .catch((err) => {
+    console.log('DB not ready', err);
+  });
 
 // connect to server custer
 if (cluster.isMaster) {
