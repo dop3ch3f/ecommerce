@@ -31,6 +31,11 @@ exports.errors = {
     hints: ['Please check that user has provided the right payload for the endpoint'],
   },
 
+  INVALID_ENTRY: {
+    code: 7003,
+    text: 'Invalid Request Parameter',
+    hints: ['Please check that user has provided the right payload for the endpoint', 'Go throught the documentation to know the appropriate payload to be sent to this endpoint'],
+  },
   // All server errors start with number 8
 
   SERVER_ERROR: {
@@ -44,7 +49,7 @@ exports.errors = {
 
 exports.create = (message, httpMethod, endpointInformation, errorList, receivedPayload) => ({
   // Meant for the developer
-  text: message,
+  message,
   // Current timestamp of the error
   timestamp: new Date(),
   // POST, GET ....

@@ -3,7 +3,7 @@ const orderCtrl = require('../controllers/orderCtrl');
 
 const api = express.Router();
 
-api.all('/orders')
+api.route('/orders')
   .post(orderCtrl.registerOrder)
   .get(orderCtrl.retreiveOrders)
   .put(orderCtrl.updateOrders)

@@ -3,8 +3,10 @@ const express = require('express');
 const mws = require('./config/middlewares');
 const routes = require('./api/v1/index');
 const numWorkers = require('os').cpus().length;
-const auth = require('./config/auth');
+// const auth = require('./config/auth');
 const { knex } = require('./db/database');
+
+process.env.PORT = 3000;
 
 const app = express();
 require('dotenv').config();
@@ -12,16 +14,12 @@ require('dotenv').config();
 app.use(mws);
 
 // use route
-app.use(auth);
-app.use(routes.home);
+// app.use(auth);
+app.use(routes.orders);
 
 knex.migrate.latest()
-  .then((success) => {
-    console.log('DB ready', success);
-  })
-  .catch((err) => {
-    console.log('DB not ready', err);
-  });
+  .then(console.log('Db Ready'))
+  .catch(err => console.log(err));
 
 // connect to server custer
 if (cluster.isMaster) {
@@ -43,6 +41,6 @@ if (cluster.isMaster) {
   });
 } else {
   app.listen(process.env.PORT, () => {
-    console.log(`app running on port: ${process.env.PORT}`);
+    console.log(`Server live @ port: ${process.env.PORT}`);
   });
 }

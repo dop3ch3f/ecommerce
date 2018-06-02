@@ -2,75 +2,127 @@
 
 const { knex } = require('../../../db/database');
 const apiMessages = require('../../../util/messages');
-const processErrors = require('../../../util/genReport');
+const genError = require('../../../util/genReport');
+const crypto = require('crypto');
+const Joi = require('joi');
+const { schema } = require('../../../validation/ordersSchema');
 
-
+// to create orders
 const registerOrder = (req, res) => {
   const data = req.body;
-  return knex('orders').insert(data).returning('*')
-    .then(response => res.json(response))
-    .catch((err) => {
-      const report = processErrors(apiMessages.errors.CREATE_FAILED, 'POST', req.url, err, data);
+  const orderId = crypto.randomBytes(16).toString('hex');
+  Joi.validate(data, schema, (err, value) => {
+    if (err) {
+      const report = genError.processErrors(apiMessages.errors.CREATE_FAILED, 'POST', req.url, { code: 'validation' }, data);
       res.status(400).json(report);
-    });
+    } else {
+      return knex('orders').insert({
+        order_id: orderId,
+        user_id: value.user_id,
+        items: value.items,
+        total: value.total,
+      }).returning(['order_id', 'user_id', 'items', 'total', 'discount', 'created_at', 'status'])
+        .then(response => res.json({ status: true, message: 'Insert order successful', data: response }))
+        .catch((error) => {
+          const report = genError.processErrors(apiMessages.errors.CREATE_FAILED, 'POST', req.url, error, value);
+          res.status(400).json(report);
+        });
+    }
+  });
 };
+// to retrieve orders
 const retreiveOrders = (req, res) => {
-  const data = req.body;
-  const criteria = new Date();
+  const data = req.query;
   // send response using order_id
   if (data.order_id) {
-    return knex.select('*').from('users').where('order_id', '=', data.order_id)
-      .then(response => res.json(response))
-      .catch((err) => {
-        const report = processErrors(apiMessages.errors.READ_FAILED, 'GET', req.url, err, data);
+    Joi.validate(data, schema, (err, value) => {
+      if (err) {
+        const report = genError.processErrors(apiMessages.errors.READ_FAILED, 'GET', req.url, { code: 'validation' }, data);
         res.status(400).json(report);
-      });
+      } else {
+        return knex.select('order_id', 'user_id', 'items', 'total', 'discount', 'created_at', 'status').from('orders').where('order_id', '=', value.order_id)
+          .then(response => res.json({ status: true, message: 'order for order id', data: response }))
+          .catch((error) => {
+            const report = genError.processErrors(apiMessages.errors.READ_FAILED, 'GET', req.url, error, value);
+            res.status(400).json(report);
+          });
+      }
+    });
   }
   // send response using user_id
   if (data.user_id) {
-    return knex.select('*').from('users').where('user_id', '=', data.user_id)
-      .then(response => res.json(response))
-      .catch((err) => {
-        const report = processErrors(apiMessages.errors.READ_FAILED, 'GET', req.url, err, data);
+    Joi.validate(data, schema, (err, value) => {
+      if (err) {
+        const report = genError.processErrors(apiMessages.errors.READ_FAILED, 'GET', req.url, { code: 'validation' }, data);
         res.status(400).json(report);
-      });
+      } else {
+        return knex.select('order_id', 'user_id', 'items', 'total', 'discount', 'created_at', 'status').from('orders').where('user_id', '=', value.user_id)
+          .then(response => res.json({ status: true, message: 'order for a single user', data: response }))
+          .catch((error) => {
+            const report = genError.processErrors(apiMessages.errors.READ_FAILED, 'GET', req.url, error, value);
+            res.status(400).json(report);
+          });
+      }
+    });
   }
-  // send all responses using time
-  return knex.select('*').from('orders').where('created_at', '<', criteria)
-    .then(response => res.json(response))
-    .catch((err) => {
-      const report = processErrors(apiMessages.errors.READ_FAILED, 'GET', req.url, err, data);
+  // send all orders
+  return knex.select('order_id', 'user_id', 'items', 'total', 'discount', 'created_at', 'status').from('orders')
+    .then(response => res.json({ status: true, message: 'All orders', data: response }))
+    .catch((error) => {
+      const report = genError.processErrors(apiMessages.errors.READ_FAILED, 'GET', req.url, error, data);
       res.status(400).json(report);
     });
 };
+// to compeletely change an order
 const updateOrders = (req, res) => {
   const data = req.body;
-  return knex('orders').where('order_id', data.order_id).update(data)
-    .then(response => res.json(response))
-    .catch((err) => {
-      const report = processErrors(apiMessages.errors.PUT_FAILED, 'PUT', req.url, err, data);
+  Joi.validate(data, schema, (err, value) => {
+    if (err) {
+      const report = genError.processErrors(apiMessages.errors.PUT_FAILED, 'PUT', req.url, { code: 'validation' }, data);
       res.status(400).json(report);
-    });
+    } else {
+      return knex('orders').where('order_id', value.order_id).update(value).returning(['order_id', 'user_id', 'items', 'total', 'discount', 'created_at', 'status'])
+        .then(response => res.json({ status: true, message: 'order for order id', data: response }))
+        .catch((error) => {
+          const report = genError.processErrors(apiMessages.errors.PUT_FAILED, 'PUT', req.url, error, data);
+          res.status(400).json(report);
+        });
+    }
+  });
 };
+// to edit a section of an order
 const editOrder = (req, res) => {
   const data = req.body;
-  return knex('orders').where('order_id', data.order_id).update(data)
-    .then(response => res.json(response))
-    .catch((err) => {
-      const report = processErrors(apiMessages.errors.PATCH_FAILED, 'PATCH', req.url, err, data);
+  Joi.validate(data, schema, (err, value) => {
+    if (err) {
+      const report = genError.processErrors(apiMessages.errors.PATCH_FAILED, 'PATCH', req.url, { code: 'validation' }, data);
       res.status(400).json(report);
-    });
+    } else {
+      return knex('orders').where('order_id', value.order_id).update(value).returning(['order_id', 'user_id', 'items', 'total', 'discount', 'created_at', 'status'])
+        .then(response => res.json({ status: true, message: 'edit order', data: response }))
+        .catch((error) => {
+          const report = genError.processErrors(apiMessages.errors.PATCH_FAILED, 'PATCH', req.url, error, data);
+          res.status(400).json(report);
+        });
+    }
+  });
 };
 const deleteOrder = (req, res) => {
   const data = req.body;
-
-  return knex('orders')
-    .where('order_id', re)
-    .del();
+  Joi.validate(data, schema, (err, value) => {
+    if (err) {
+      const report = genError.processErrors(apiMessages.errors.DELETE_FAILED, 'DELETE', req.url, { code: 'validation' }, data);
+      res.status(400).json(report);
+    } else {
+      return knex('orders').where('order_id', value.order_id).returning(['order_id', 'user_id', 'items', 'total', 'discount', 'created_at', 'status']).del()
+        .then(response => res.json({ status: true, message: 'order for order id', data: response }))
+        .catch((error) => {
+          const report = genError.processErrors(apiMessages.errors.DELETE_FAILED, 'DELETE', req.url, error, value);
+          res.status(400).json(report);
+        });
+    }
+  });
 };
-
-// converts the Knex errors to API specific errors
-
 
 module.exports = {
   registerOrder,

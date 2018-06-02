@@ -1,7 +1,7 @@
 {
     "name": "pulse",
     "version": "1.0.0",
-    "description": "",
+    "description": "Ecommerce site",
     "main": "index.js",
     "scripts": {
         "build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files",
@@ -13,10 +13,13 @@
     "license": "ISC",
     "dependencies": {
         "bcrypt-nodejs": "0.0.3",
+        "body-parser": "^1.18.3",
+        "cors": "^2.8.4",
         "dotenv": "^4.0.0",
-        "express": "^4.16.2",
+        "express": "^4.16.3",
         "express-mung": "^0.4.6",
         "helmet": "^3.8.2",
+        "joi": "^13.3.0",
         "jsonwebtoken": "^8.1.0",
         "knex": "^0.14.6",
         "knex-generic-errors": "^0.1.5",
@@ -24,8 +27,13 @@
         "mongoose": "^4.13.14",
         "morgan": "^1.9.0",
         "mysql": "^2.15.0",
+        "npm": "^6.1.0",
         "pg": "^7.4.3",
+        "polymer-cli": "^1.7.2",
+        "prettier": "^1.13.4",
         "randomstring": "^1.1.5",
+        "react": "^16.4.0",
+        "react-devtools": "^3.2.3",
         "redis": "^2.8.0"
     },
     "devDependencies": {
